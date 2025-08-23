@@ -11,8 +11,11 @@ const products = require('./db/products');
 app = express();
 
 app.use(express.json());
-app.use(cors());
-// Serve uploads folder correctly
+app.use(cors({
+  origin: "https://e-comm-react-frontend.vercel.app",
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  credentials: true
+}));// Serve uploads folder correctly
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 const uploadDir = path.join(__dirname, "uploads");
