@@ -11,11 +11,28 @@ const products = require('./db/products');
 app = express();
 
 app.use(express.json());
-app.use(cors({
-  origin: "https://e-comm-react-frontend.vercel.app",
-  methods: ["GET", "POST", "PUT", "DELETE"],
-  credentials: true
-}));// Serve uploads folder correctly
+
+const allowedOrigins = [
+  "http://localhost:3000", // ✅ local React
+  "https://e-comm-react-frontend.vercel.app" // ✅ deployed React
+];
+
+// ✅ Dynamic CORS handling
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true,
+  })
+);
+
+// Serve uploads folder correctly
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 const uploadDir = path.join(__dirname, "uploads");
