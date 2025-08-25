@@ -6,9 +6,9 @@ const path = require("path");
 const fs = require("fs");
 const jwt = require('jsonwebtoken');
 const secretkey = 'fact'
-require('./db/config');
-const users = require('./db/users');
-const products = require('./db/products');
+require('../db/config');
+const users = require('../db/users');
+const products = require('../db/products');
 app = express();
 
 app.use(express.json());
@@ -132,7 +132,3 @@ app.get("/", (req, res) => {
   res.send("Backend running!");
 });
 module.exports = app;
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
