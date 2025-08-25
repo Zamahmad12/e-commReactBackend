@@ -13,26 +13,17 @@ app = express();
 
 app.use(express.json());
 
-// ✅ Allowed origins
-const allowedOrigins = [
-  "http://localhost:3000", // local React
-  "https://e-comm-react-frontend.vercel.app/", // deployed React
-];
-
+// ✅ Allow ALL origins
 app.use(
   cors({
-    origin: function (origin, callback) {
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error("Not allowed by CORS"));
-      }
-    },
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    allowedHeaders: ["Content-Type", "Authorization"], // ✅ allow auth headers
-    credentials: true,
+    origin: "*",
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
+
+// ✅ Handle preflight
+app.options("*", cors());
 
 // Serve uploads folder correctly
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
