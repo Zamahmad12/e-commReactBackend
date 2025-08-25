@@ -13,12 +13,12 @@ app = express();
 
 app.use(express.json());
 
+// ✅ Allowed origins
 const allowedOrigins = [
-  "http://localhost:3000", // ✅ local React
-  "https://e-comm-react-frontend.vercel.app" // ✅ deployed React
+  "http://localhost:3000", // local React
+  "https://e-comm-react-frontend.vercel.app", // deployed React
 ];
 
-// ✅ Dynamic CORS handling
 app.use(
   cors({
     origin: function (origin, callback) {
@@ -29,6 +29,7 @@ app.use(
       }
     },
     methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"], // ✅ allow auth headers
     credentials: true,
   })
 );
