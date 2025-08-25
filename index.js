@@ -16,7 +16,7 @@ app.use(express.json());
 // ✅ Allowed origins
 const allowedOrigins = [
   "http://localhost:3000", // local React
-  "https://e-comm-react-frontend-138k2cc06-zameer-ahmads-projects.vercel.app", // deployed React
+  "https://e-comm-react-frontend.vercel.app/", // deployed React
 ];
 
 app.use(
