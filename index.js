@@ -139,4 +139,8 @@ function authenticateToken(req, res, next) {
 app.get("/", (req, res) => {
   res.send("Backend running!");
 });
-app.listen(5000)
+module.exports = app;
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});
