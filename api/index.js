@@ -5,15 +5,16 @@ const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
 const jwt = require('jsonwebtoken');
-const secretkey = 'fact'
 require('../db/config');
 const users = require('../db/users');
 const products = require('../db/products');
+
+const secretkey = process.env.JWT_SECRET || "fallbackSecret";
+
 app = express();
 
 app.use(express.json());
 
-// ✅ Allow ALL origins
 app.use(
   cors({
     origin: "*",
@@ -21,9 +22,6 @@ app.use(
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
-
-// ✅ Handle preflight
-app.options("*", cors());
 
 // Serve uploads folder correctly
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
