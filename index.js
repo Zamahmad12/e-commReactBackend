@@ -17,14 +17,12 @@ const app = express();
 app.use(express.json());
 
 // ✅ CORS fix: allow only your frontend
-app.use(
-  cors({
-    origin: ["https://e-comm-react-frontend.vercel.app"],
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-    credentials: true,
-  })
-);
+app.use(cors({
+  origin: "https://e-comm-react-frontend.vercel.app",
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  allowedHeaders: ["Content-Type", "Authorization"]
+}));
+
 
 // Serve uploads folder correctly
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
@@ -147,10 +145,17 @@ function authenticateToken(req, res, next) {
   }
 }
 
-// Test route
 app.get("/", (req, res) => {
-  res.send("Backend running on Vercel!");
+  res.send("Backend running!");
 });
 
-// ✅ Do NOT use app.listen() on Vercel
+// ✅ Export for Vercel
 module.exports = app;
+
+// ✅ Run locally only
+if (require.main === module) {
+  app.listen(5000, () => {
+    console.log("Server running on http://localhost:5000");
+  });
+}
+
