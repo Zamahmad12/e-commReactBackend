@@ -1,4 +1,3 @@
-const serverless = require("serverless-http");
 require("dotenv").config();
 const express = require('express');
 const cors = require("cors");
@@ -16,13 +15,7 @@ app = express();
 
 app.use(express.json());
 
-app.use(
-  cors({
-    origin: ["https://e-comm-react-frontend.vercel.app", "http://localhost:3000"],
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-  })
-);
+app.use(cors());
 
 // Serve uploads folder correctly
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
@@ -131,4 +124,4 @@ app.get("/", (req, res) => {
   res.send("Backend running!");
 });
 module.exports = app;
-module.exports.handler = serverless(app);
+app.listen(5000);
