@@ -20,7 +20,7 @@ app.use(
   cors({
     origin: [
       "http://localhost:3000",
-      "https://e-comm-react-frontend.vercel.app",
+      "https://e-comm-react-frontend.vercel.app/",
       "https://e-comm-react-frontend-juu9fzuob-zameer-ahmads-projects.vercel.app"
     ],
     methods: ["GET", "POST", "PUT", "DELETE"],
