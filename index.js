@@ -19,7 +19,7 @@ app.use(
   cors({
     origin: "https://e-comm-react-frontend.vercel.app",
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
+    allowedHeaders: ["Content-Type", "authorization"],
   })
 );
 app.options("*", cors());
