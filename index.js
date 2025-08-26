@@ -124,4 +124,3 @@ app.get("/", (req, res) => {
   res.send("Backend running!");
 });
 module.exports = app;
-app.listen(5000);
