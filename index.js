@@ -5,9 +5,9 @@ const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
 const jwt = require('jsonwebtoken');
-require('../db/config');
-const users = require('../db/users');
-const products = require('../db/products');
+require('./db/config');
+const users = require('./db/users');
+const products = require('./db/products');
 
 const secretkey = process.env.JWT_SECRET || "fallbackSecret";
 
@@ -130,3 +130,4 @@ app.get("/", (req, res) => {
   res.send("Backend running!");
 });
 module.exports = app;
+app.listen(5000);
