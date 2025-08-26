@@ -22,6 +22,8 @@ app.use(
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
+app.options("*", cors());
+
 
 // Serve uploads folder correctly
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
