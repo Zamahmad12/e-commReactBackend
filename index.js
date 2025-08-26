@@ -17,11 +17,18 @@ const app = express();
 app.use(express.json());
 
 // ✅ CORS fix: allow only your frontend
-app.use(cors({
-  origin: "https://e-comm-react-frontend.vercel.app",
-  methods: ["GET", "POST", "PUT", "DELETE"],
-  allowedHeaders: ["Content-Type", "Authorization"]
-}));
+app.use(
+  cors({
+    origin: [
+      "http://localhost:3000", // local React
+      "https://e-comm-react-frontend.vercel.app", // main Vercel frontend
+      "https://e-comm-react-frontend-juu9fzuob-zameer-ahmads-projects.vercel.app" // preview domain
+    ],
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
+
 
 
 // Serve uploads folder correctly
@@ -151,11 +158,4 @@ app.get("/", (req, res) => {
 
 // ✅ Export for Vercel
 module.exports = app;
-
-// ✅ Run locally only
-if (require.main === module) {
-  app.listen(5000, () => {
-    console.log("Server running on http://localhost:5000");
-  });
-}
 
