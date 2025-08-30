@@ -4,8 +4,7 @@ const cloudinary = require("./cloudinary");
 const express = require("express");
 const cors = require("cors");
 const multer = require("multer");
-const path = require("path");
-const fs = require("fs");
+const { Readable } = require("stream"); // ✅ FIXED
 const jwt = require("jsonwebtoken");
 
 require("./db/config");
@@ -17,7 +16,7 @@ const secretkey = process.env.JWT_SECRET || "fallbackSecret";
 const app = express();
 app.use(express.json());
 
-// CORS: include localhost + production + preview
+// CORS
 app.use(
   cors({
     origin: [
@@ -28,21 +27,16 @@ app.use(
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
     preflightContinue: false,
-    optionsSuccessStatus: 200, // 👈 important for some browsers
+    optionsSuccessStatus: 200,
   })
 );
-
-// Explicitly handle OPTIONS for all routes
 app.options("*", cors());
 
-// Multer memory storage (no disk)
+// Multer (in-memory)
 const storage = multer.memoryStorage();
-const upload = multer({
-  storage,
-  limits: { fileSize: 10 * 1024 * 1024 } // 10MB limit
-});
+const upload = multer({ storage, limits: { fileSize: 10 * 1024 * 1024 } });
 
-// helper: upload buffer to cloudinary
+// Helper: upload buffer to Cloudinary
 function uploadBufferToCloudinary(buffer, folder = "profiles") {
   return new Promise((resolve, reject) => {
     const stream = cloudinary.uploader.upload_stream(
@@ -56,11 +50,13 @@ function uploadBufferToCloudinary(buffer, folder = "profiles") {
   });
 }
 
-
 // -------- ROUTES --------
+
+// Register
 app.post("/register", upload.single("profilePic"), async (req, resp) => {
   try {
     let profilePicUrl = null;
+
     if (req.file && req.file.buffer) {
       const uploadRes = await uploadBufferToCloudinary(req.file.buffer, "users/profile_pics");
       profilePicUrl = uploadRes.secure_url;
@@ -84,6 +80,8 @@ app.post("/register", upload.single("profilePic"), async (req, resp) => {
     resp.status(500).send({ error: "Registration failed" });
   }
 });
+
+// Login
 app.post("/login", async (req, resp) => {
   if (req.body.password && req.body.email) {
     let user = await users.findOne(req.body).select("-password");
@@ -98,6 +96,7 @@ app.post("/login", async (req, resp) => {
   }
 });
 
+// Products CRUD
 app.post("/add-product", authenticateToken, async (req, resp) => {
   const product = new products(req.body);
   const result = await product.save();
@@ -135,6 +134,7 @@ app.get("/search/:key", authenticateToken, async (req, resp) => {
   resp.send(result);
 });
 
+// Auth Middleware
 function authenticateToken(req, res, next) {
   let token = req.headers["authorization"];
   if (!token) return res.status(403).send({ result: "Please provide token with header" });
@@ -145,6 +145,7 @@ function authenticateToken(req, res, next) {
   });
 }
 
-app.get("/", (req, res) => res.send("Backend running!"));
+// Root
+app.get("/", (req, res) => res.send("✅ Backend running on Vercel!"));
 
-module.exports = app; // <-- Do NOT app.listen() on Vercel
+module.exports = app; // IMPORTANT for Vercel
