@@ -22,13 +22,16 @@ app.use(
       "http://localhost:3000",
       "https://e-comm-react-frontend.vercel.app"
     ],
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    methods: "GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS",
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
+    preflightContinue: false,
+    optionsSuccessStatus: 200, // 👈 important for some browsers
   })
 );
-app.options("*", cors()); // handle preflight
 
+// Explicitly handle OPTIONS for all routes
+app.options("*", cors());
 
 // Static (local dev ok; Vercel is ephemeral)
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
