@@ -1,4 +1,6 @@
 require("dotenv").config();
+const cloudinary = require("./cloudinary");
+
 const express = require("express");
 const cors = require("cors");
 const multer = require("multer");
@@ -33,34 +35,55 @@ app.use(
 // Explicitly handle OPTIONS for all routes
 app.options("*", cors());
 
-// Static (local dev ok; Vercel is ephemeral)
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
-const uploadDir = path.join(__dirname, "uploads");
-if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);
-
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, uploadDir),
-  filename: (req, file, cb) => cb(null, Date.now() + ".jpg")
+// Multer memory storage (no disk)
+const storage = multer.memoryStorage();
+const upload = multer({
+  storage,
+  limits: { fileSize: 10 * 1024 * 1024 } // 10MB limit
 });
-const upload = multer({ storage });
+
+// helper: upload buffer to cloudinary
+function uploadBufferToCloudinary(buffer, folder = "profiles") {
+  return new Promise((resolve, reject) => {
+    const stream = cloudinary.uploader.upload_stream(
+      { folder, resource_type: "image" },
+      (error, result) => {
+        if (error) return reject(error);
+        resolve(result);
+      }
+    );
+    Readable.from(buffer).pipe(stream);
+  });
+}
+
 
 // -------- ROUTES --------
 app.post("/register", upload.single("profilePic"), async (req, resp) => {
-  let user = new users({
-    ...req.body,
-    profilePic: req.file ? `/uploads/${req.file.filename}` : null
-  });
+  try {
+    let profilePicUrl = null;
+    if (req.file && req.file.buffer) {
+      const uploadRes = await uploadBufferToCloudinary(req.file.buffer, "users/profile_pics");
+      profilePicUrl = uploadRes.secure_url;
+    }
 
-  let result = await user.save();
-  result = result.toObject();
-  delete result.password;
+    let user = new users({
+      ...req.body,
+      profilePic: profilePicUrl
+    });
 
-  jwt.sign({ result }, secretkey, { expiresIn: "2h" }, (err, token) => {
-    if (err) return resp.send({ result: "Error signing token" });
-    resp.send({ result, token });
-  });
+    let result = await user.save();
+    result = result.toObject();
+    delete result.password;
+
+    jwt.sign({ user: result }, secretkey, { expiresIn: "2h" }, (err, token) => {
+      if (err) return resp.status(500).send({ result: "Error signing token" });
+      resp.send({ user: result, token });
+    });
+  } catch (err) {
+    console.error("Register error:", err);
+    resp.status(500).send({ error: "Registration failed" });
+  }
 });
-
 app.post("/login", async (req, resp) => {
   if (req.body.password && req.body.email) {
     let user = await users.findOne(req.body).select("-password");
