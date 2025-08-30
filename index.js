@@ -20,13 +20,15 @@ app.use(
   cors({
     origin: [
       "http://localhost:3000",
-      "https://e-comm-react-frontend.vercel.app/",
-      "https://e-comm-react-frontend-juu9fzuob-zameer-ahmads-projects.vercel.app"
+      "https://e-comm-react-frontend.vercel.app"
     ],
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    allowedHeaders: ["Content-Type", "Authorization"]
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true,
   })
 );
+app.options("*", cors()); // handle preflight
+
 
 // Static (local dev ok; Vercel is ephemeral)
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
