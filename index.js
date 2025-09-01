@@ -13,7 +13,7 @@ const users = require("./db/users");
 const products = require("./db/products");
 
 // Routes
-const cloudinaryRoutes = require("./routes/sign");
+const cloudinaryRoutes = require("./routes/sign"); // Signature route
 
 const secretkey = process.env.JWT_SECRET || "fallbackSecret";
 
@@ -36,14 +36,14 @@ app.use(
 );
 app.options("*", cors());
 
-// ✅ Cloudinary API routes
+// ✅ Cloudinary API signature route
 app.use("/api", cloudinaryRoutes);
 
-// Multer (in-memory)
+// Multer (in-memory) for other backend uploads if needed
 const storage = multer.memoryStorage();
 const upload = multer({ storage, limits: { fileSize: 10 * 1024 * 1024 } });
 
-// Helper: upload buffer to Cloudinary
+// Helper: upload buffer to Cloudinary (still usable if needed)
 function uploadBufferToCloudinary(buffer, folder = "profiles") {
   return new Promise((resolve, reject) => {
     const stream = cloudinary.uploader.upload_stream(
@@ -59,30 +59,16 @@ function uploadBufferToCloudinary(buffer, folder = "profiles") {
 
 // -------- ROUTES --------
 
-// Register
-app.post("/register", upload.single("profilePic"), async (req, resp) => {
+// Register (now receives profilePicUrl from frontend)
+app.post("/register", async (req, resp) => {
   try {
-    console.log("Incoming body:", req.body);
-    console.log("Incoming file:", req.file ? req.file.originalname : "No file");
-
-    let profilePicUrl = null;
-
-    if (req.file && req.file.buffer) {
-      try {
-        const uploadRes = await uploadBufferToCloudinary(
-          req.file.buffer,
-          "users/profile_pics"
-        );
-        profilePicUrl = uploadRes.secure_url;
-      } catch (cloudErr) {
-        console.error("Cloudinary upload error:", cloudErr);
-        return resp.status(500).send({ error: "Cloudinary upload failed" });
-      }
-    }
+    const { name, email, password, profilePicUrl } = req.body;
 
     let user = new users({
-      ...req.body,
-      profilePic: profilePicUrl,
+      name,
+      email,
+      password,
+      profilePic: profilePicUrl || null,
     });
 
     let result = await user.save();
