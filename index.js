@@ -4,12 +4,16 @@ const cloudinary = require("./cloudinary");
 const express = require("express");
 const cors = require("cors");
 const multer = require("multer");
-const { Readable } = require("stream"); 
+const { Readable } = require("stream");
 const jwt = require("jsonwebtoken");
 
+// DB
 require("./db/config");
 const users = require("./db/users");
 const products = require("./db/products");
+
+// Routes
+const cloudinaryRoutes = require("./routes/sign");
 
 const secretkey = process.env.JWT_SECRET || "fallbackSecret";
 
@@ -31,6 +35,9 @@ app.use(
   })
 );
 app.options("*", cors());
+
+// ✅ Cloudinary API routes
+app.use("/api", cloudinaryRoutes);
 
 // Multer (in-memory)
 const storage = multer.memoryStorage();
@@ -55,16 +62,27 @@ function uploadBufferToCloudinary(buffer, folder = "profiles") {
 // Register
 app.post("/register", upload.single("profilePic"), async (req, resp) => {
   try {
+    console.log("Incoming body:", req.body);
+    console.log("Incoming file:", req.file ? req.file.originalname : "No file");
+
     let profilePicUrl = null;
 
     if (req.file && req.file.buffer) {
-      const uploadRes = await uploadBufferToCloudinary(req.file.buffer, "users/profile_pics");
-      profilePicUrl = uploadRes.secure_url;
+      try {
+        const uploadRes = await uploadBufferToCloudinary(
+          req.file.buffer,
+          "users/profile_pics"
+        );
+        profilePicUrl = uploadRes.secure_url;
+      } catch (cloudErr) {
+        console.error("Cloudinary upload error:", cloudErr);
+        return resp.status(500).send({ error: "Cloudinary upload failed" });
+      }
     }
 
     let user = new users({
       ...req.body,
-      profilePic: profilePicUrl
+      profilePic: profilePicUrl,
     });
 
     let result = await user.save();
@@ -72,12 +90,15 @@ app.post("/register", upload.single("profilePic"), async (req, resp) => {
     delete result.password;
 
     jwt.sign({ user: result }, secretkey, { expiresIn: "2h" }, (err, token) => {
-      if (err) return resp.status(500).send({ result: "Error signing token" });
+      if (err) {
+        console.error("JWT sign error:", err);
+        return resp.status(500).send({ error: "Token signing failed" });
+      }
       resp.send({ user: result, token });
     });
   } catch (err) {
     console.error("Register error:", err);
-    resp.status(500).send({ error: "Registration failed" });
+    resp.status(500).send({ error: err.message || "Registration failed" });
   }
 });
 
