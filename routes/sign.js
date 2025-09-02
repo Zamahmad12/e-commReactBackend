@@ -1,37 +1,32 @@
-// routes/cloudinary.js
 const express = require("express");
 const cloudinary = require("../cloudinary");
 const router = express.Router();
 const cors = require("cors");
 
-// ✅ Allow your frontend domains
-const allowedOrigins = [
-  "http://localhost:3000",
-  "https://e-comm-react-frontend.vercel.app",
-];
-
+// Allow only your frontend
 router.use(
   cors({
-    origin: function (origin, callback) {
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error("Not allowed by CORS"));
-      }
-    },
+    origin: [
+      "http://localhost:3000",
+      "https://e-comm-react-frontend.vercel.app",
+    ],
     credentials: true,
   })
 );
 
-// GET /api/cloudinary/get-signature
 router.get("/cloudinary/get-signature", (req, res) => {
   try {
     const timestamp = Math.floor(Date.now() / 1000);
     const folder = req.query.folder || "users/profile_pics";
 
-    // Create signature using Cloudinary SDK
+    const paramsToSign = {
+      folder,
+      timestamp,
+      resource_type: "image", // ✅ important for uploads
+    };
+
     const signature = cloudinary.utils.api_sign_request(
-      { folder, timestamp },
+      paramsToSign,
       process.env.CLOUDINARY_API_SECRET
     );
 
@@ -41,6 +36,7 @@ router.get("/cloudinary/get-signature", (req, res) => {
       folder,
       apiKey: process.env.CLOUDINARY_API_KEY,
       cloudName: process.env.CLOUDINARY_CLOUD_NAME,
+      resource_type: "image", // send this to frontend
     });
   } catch (err) {
     console.error("Signature error:", err);
