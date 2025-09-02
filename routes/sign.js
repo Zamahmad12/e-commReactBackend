@@ -22,7 +22,6 @@ router.get("/cloudinary/get-signature", (req, res) => {
     const paramsToSign = {
       folder,
       timestamp,
-      resource_type: "image", // ✅ important for uploads
     };
 
     const signature = cloudinary.utils.api_sign_request(
