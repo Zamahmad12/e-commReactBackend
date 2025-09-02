@@ -19,11 +19,7 @@ router.get("/cloudinary/get-signature", (req, res) => {
     const timestamp = Math.floor(Date.now() / 1000);
     const folder = req.query.folder || "users/profile_pics";
 
-    const paramsToSign = {
-      folder,
-      timestamp,
-      resource_type: "image", // ✅ important for uploads
-    };
+    const paramsToSign = { folder, timestamp };
 
     const signature = cloudinary.utils.api_sign_request(
       paramsToSign,
@@ -36,7 +32,6 @@ router.get("/cloudinary/get-signature", (req, res) => {
       folder,
       apiKey: process.env.CLOUDINARY_API_KEY,
       cloudName: process.env.CLOUDINARY_CLOUD_NAME,
-      resource_type: "image", // send this to frontend
     });
   } catch (err) {
     console.error("Signature error:", err);
