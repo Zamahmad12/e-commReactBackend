@@ -19,14 +19,7 @@ router.get("/cloudinary/get-signature", (req, res) => {
     const timestamp = Math.floor(Date.now() / 1000);
     const folder = req.query.folder || "users/profile_pics";
 
-<<<<<<< HEAD
-    const paramsToSign = { folder, timestamp };
-=======
-    const paramsToSign = {
-      folder,
-      timestamp,
-    };
->>>>>>> aa4d25ff5a93fb7a6347113faf38d64056038732
+const paramsToSign = { folder, timestamp };
 
     const signature = cloudinary.utils.api_sign_request(
       paramsToSign,
